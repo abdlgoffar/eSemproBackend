@@ -6,10 +6,12 @@ use App\Http\Requests\ExaminerCreateRequest;
 use App\Http\Requests\ExaminerUpdateRequest;
 use App\Http\Resources\ExaminerResponse;
 use App\Models\Examiner;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExaminerController extends Controller
 {
@@ -83,5 +85,31 @@ class ExaminerController extends Controller
 
         $examiner->save();
         return new ExaminerResponse($examiner);
+    }
+
+    public function get(): JsonResponse 
+    {
+        $examiners = Examiner::paginate();
+        return response()->json($examiners, 201, ["Content-Type" => "application/json"]);
+    }
+
+
+
+    public function getExaminerInvitations() 
+    {
+        // $user = Auth::user();
+        // $examiner = Examiner::where('user_id', $user->id)->first();
+
+        // $invitations = $examiner->invitations;//display invitations
+        
+        // return $examiner;
+
+        $user = Auth::user();
+        $examiner = Examiner::where('user_id', $user->id)->first();
+        
+        $examiner->load('invitations.students');
+  
+    
+        return $examiner;
     }
 }

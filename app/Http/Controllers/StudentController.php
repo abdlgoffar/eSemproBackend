@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StudentCreateRequest;
 use App\Http\Requests\StudentUpdateRequest;
 use App\Http\Resources\StudentResponse;
+use App\Models\Examiner;
 use App\Models\HeadStudyProgram;
 use App\Models\Invitation;
 use App\Models\Proposal;
+use App\Models\SeminarRoom;
 use App\Models\Student;
 use App\Models\Supervisor;
 use App\Models\User;
@@ -96,6 +98,59 @@ class StudentController extends Controller
         return $supervisor;
     }
 
+    private function getExaminerToFK(int $examiner_id): Examiner
+    {
+        $examiner = Examiner::where('id', $examiner_id)->first();
+        if (!$examiner) {
+            throw new HttpResponseException(response()->json([
+                'errors' => [
+                    "messages" => [
+                        "examiner data not found"
+                    ]
+                ]
+            ])->setStatusCode(404));
+        }
+        return $examiner;
+    }
+
+    private function getSeminarRoomToFK(int $seminar_room_id): SeminarRoom
+    {
+        $seminarRoom = SeminarRoom::where('id', $seminar_room_id)->first();
+        if (!$seminarRoom) {
+            throw new HttpResponseException(response()->json([
+                'errors' => [
+                    "messages" => [
+                        "seminar room data not found"
+                    ]
+                ]
+            ])->setStatusCode(404));
+        }
+        return $seminarRoom;
+    }
+
+    public function getStudentById(int $student_id): StudentResponse
+    {
+        $student = Student::where('id', $student_id)->first();
+        if (!$student) {
+            throw new HttpResponseException(response()->json([
+                'errors' => [
+                    "messages" => [
+                        "student data not found"
+                    ]
+                ]
+            ])->setStatusCode(404));
+        }
+        return new StudentResponse($student);
+    }
+
+    public function getStudentProposal(int $student_id)
+    {
+        $student = Student::find($student_id);
+        $proposal = $student->proposal;
+
+        return $proposal;
+    }
+
     public function create(int $user_id, int $head_study_program_id, StudentCreateRequest $request): JsonResponse
     {
 
@@ -123,7 +178,7 @@ class StudentController extends Controller
         return (new StudentResponse($student))->response()->setStatusCode(201);
     }
 
-    public function update(int $student_id, ?int $invitation_id = 0, ?int $head_study_program_id = 0, ?int $proposal_id = 0, StudentUpdateRequest $request): StudentResponse
+    public function update(int $student_id, ?int $invitation_id = 0, ?int $head_study_program_id = 0, ?int $proposal_id = 0, ?int $seminar_room_id = 0, StudentUpdateRequest $request): StudentResponse
     {
         $data = $request->validated();
 
@@ -138,7 +193,7 @@ class StudentController extends Controller
                 ]
             ], 404));
         }
-        
+
         if (isset($data['name'])) {
             $student->name = $data['name'];
         }
@@ -163,17 +218,22 @@ class StudentController extends Controller
         if ($proposal_id !== 0) {
             $proposal = $this->getProposalToFK($proposal_id);
             $student->proposal_id = $proposal->id;
+            $student->is_proposal_available = 1;
+        }
+        if ($seminar_room_id !== 0) {
+            $seminarRoom = $this->getSeminarRoomToFK($seminar_room_id);
+            $student->seminar_room_id = $seminarRoom->id;
         }
 
         $student->save();
         return new StudentResponse($student);
     }
 
-    public function studentSupervisor(Request $request): JsonResponse
+    public function createStudentSupervisor(Request $request): JsonResponse
     {
         $user = Auth::user();
-        $student = Student::where('id', $user->id)->first();
-        
+        $student = Student::where('user_id', $user->id)->first();
+
         if ($student == false) {
             throw new HttpResponseException(response([
                 'errors' => [
@@ -188,21 +248,98 @@ class StudentController extends Controller
 
         if ($data->fails()) throw new ValidationException($data);
 
-        if (empty($request->supervisors)) throw new HttpResponseException(response([ 'errors' => ["messages" => ["array data supervisors is empty"]]], 400));
-        
+        if (empty($request->supervisors)) throw new HttpResponseException(response(['errors' => ["messages" => ["array data supervisors is empty"]]], 400));
+
         foreach ($request->supervisors as $i) {
-            if (is_numeric($i) == false || $i == 0) throw new HttpResponseException(response([ 'errors' => ["messages" => ["array data value must number and not zero"]]], 400));
+            if (is_numeric($i) == false || $i == 0) throw new HttpResponseException(response(['errors' => ["messages" => ["array data value must number and not zero"]]], 400));
         }
 
         foreach ($request->supervisors as $i) {
             $this->getSupervisorToFK($i);
         }
 
-     
-        $result = $student->supervisor()->sync($request->supervisors);
-        
-        
-        return response()->json([$result], 201);
+        $result = $student->supervisors()->sync($request->supervisors);
 
+        return response()->json([$result], 201);
+    }
+
+    public function createStudentExaminer(Request $request, int $student_id): JsonResponse
+    {
+
+        $student = Student::where('id', $student_id)->first();
+
+        if ($student == false) {
+            throw new HttpResponseException(response([
+                'errors' => [
+                    "messages" => [
+                        "student data not found"
+                    ]
+                ]
+            ], 404));
+        }
+
+        $data = Validator::make($request->all(), ['examiners' => ["required", "array"]]);
+
+        if ($data->fails()) throw new ValidationException($data);
+
+        if (empty($request->examiners)) throw new HttpResponseException(response(['errors' => ["messages" => ["array data examiners is empty"]]], 400));
+
+        foreach ($request->examiners as $i) {
+            if (is_numeric($i) == false || $i == 0) throw new HttpResponseException(response(['errors' => ["messages" => ["array data value must number and not zero"]]], 400));
+        }
+
+        foreach ($request->examiners as $i) {
+            $this->getExaminerToFK($i);
+        }
+
+        $result = $student->examiners()->sync($request->examiners);
+
+        return response()->json([$result], 201);
+    }
+
+    public function deleteStudentExaminer(int $student_id): JsonResponse
+    {
+
+        $student = Student::where('id', $student_id)->first();
+
+        if ($student == false) {
+            throw new HttpResponseException(response([
+                'errors' => [
+                    "messages" => [
+                        "student data not found"
+                    ]
+                ]
+            ], 404));
+        }
+
+        $result = $student->examiners()->detach();
+
+        return response()->json([$result], 201);
+    }
+
+
+    public function getStudentsHaveExaminer()
+    {
+        $studentsWithExaminers = Student::whereHas('examiners')->get();
+        return $studentsWithExaminers;
+    }
+
+    public function getStudentByUserId(): JsonResponse
+    {
+        $user = Auth::user();
+        $student = Student::where('user_id', $user->id)->first();
+
+        if ($student == false) {
+            throw new HttpResponseException(response([
+                'errors' => [
+                    "messages" => [
+                        "student data not found"
+                    ]
+                ]
+            ], 404));
+        }
+
+
+        return (new StudentResponse($student))->response()->setStatusCode(201);
     }
 }

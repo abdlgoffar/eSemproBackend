@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProposalPdfResponse extends JsonResource
+class SeminarRoomResponse extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,9 +16,7 @@ class ProposalPdfResponse extends JsonResource
     {
         return [
             "id" => $this->id,
-            "name" => $this->name,
-            "original_name" => $this->original_name,
-            "path" => $this->path,
+            "name" => $this->name
         ];
     }
 }

@@ -53,15 +53,18 @@ class HeadStudyProgramController extends Controller
         return (new HeadStudyProgramResponse($headStudyProgram))->response()->setStatusCode(201);
     }
 
+    public function getStudentsByHeadStudyProgramId(int $head_study_program_id) 
+    {
+        $students = HeadStudyProgram::find($head_study_program_id)->students()->where('is_proposal_available', 1)->get();
+        return $students;
+    }
+
     public function update(int $head_study_program_id, HeadStudyProgramUpdateRequest $request): HeadStudyProgramResponse
     {
         $data = $request->validated();
 
-        
         if (!HeadStudyProgram::where('id', $head_study_program_id)->first()) {
-        
             throw new HttpResponseException(response([
-              
                 'errors' => [
                     "messages" => [
                         "head study program data not found"
@@ -81,7 +84,6 @@ class HeadStudyProgramController extends Controller
         if (isset($data['phone'])) {
             $headStudyProgram->phone = $data['phone'];
         }
-       
 
         $headStudyProgram->save();
         return new HeadStudyProgramResponse($headStudyProgram);

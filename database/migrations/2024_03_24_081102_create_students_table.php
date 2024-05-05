@@ -19,12 +19,13 @@ return new class extends Migration
             $table->string("name", 100)->nullable(false);
             $table->string("address", 300)->nullable(false);
             $table->string("phone", 20)->nullable(false)->unique("users_phone_unique");
-
+            $table->boolean("is_proposal_available")->nullable()->default(0);
            
             $table->foreignId("user_id")->nullable(false);
             $table->foreignId("invitation_id")->nullable();
             $table->foreignId("head_study_program_id")->nullable(false);
             $table->foreignId("proposal_id")->nullable();
+            $table->foreignId("seminar_room_id")->nullable();
 
             $table->softDeletes();
             $table->timestamps();

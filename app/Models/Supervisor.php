@@ -33,7 +33,7 @@ class Supervisor extends Model
     }
 
     //many to many 
-    public function student(): BelongsToMany
+    public function students(): BelongsToMany
     {
         return $this->belongsToMany(Student::class, "students_supervisors")->withTimestamps();
     }

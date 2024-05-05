@@ -36,8 +36,14 @@ class Examiner extends Model
     }
 
     //many to many 
-    public function invitation(): BelongsToMany
+    public function invitations(): BelongsToMany
     {
         return $this->belongsToMany(Invitation::class, "examiners_invitations");
+    }
+
+    //many to many 
+    public function students(): BelongsToMany
+    {
+        return $this->belongsToMany(Student::class, "students_examiners")->withTimestamps();
     }
 }

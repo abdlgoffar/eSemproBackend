@@ -17,7 +17,8 @@ return new class extends Migration
             $table->id();
             $table->string("name", 600)->nullable();
             $table->string("path", 600)->nullable();
-      
+            $table->string("original_name", 600)->nullable();
+            
             $table->foreignId("invitation_id");
             
             $table->softDeletes();

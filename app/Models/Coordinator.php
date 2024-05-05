@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Coordinator extends Model
@@ -29,5 +30,9 @@ class Coordinator extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, "user_id", "id");
+    }
+
+    public function invitations(): HasMany {
+        return $this->hasMany(Invitation::class, "coordinator_id", "id");
     }
 }

@@ -13,12 +13,11 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('invitations_rooms', function (Blueprint $table) {
+        Schema::create('seminar_rooms', function (Blueprint $table) {
             $table->id();
-
-            $table->foreignId("invitation_id")->constrained();
-            $table->foreignId("room_id")->constrained();
-
+            $table->string("name", 100)->nullable(false);
+            
+            $table->softDeletes();
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('invitations_rooms');
+        Schema::dropIfExists('seminar_rooms');
     }
 };

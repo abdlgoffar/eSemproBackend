@@ -83,4 +83,10 @@ class CoordinatorController extends Controller
         $coordinator->save();
         return new CoordinatorResponse($coordinator);
     }
+
+    public function get(): JsonResponse 
+    {
+        $coordinartors = Coordinator::paginate();
+        return response()->json($coordinartors, 201, ["Content-Type" => "application/json"]);
+    }
 }

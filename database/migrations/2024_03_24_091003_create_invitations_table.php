@@ -16,11 +16,12 @@ return new class extends Migration
         Schema::create('invitations', function (Blueprint $table) {
             $table->id();
             $table->string("number", 100)->nullable(false);
-            $table->time('implementation_hours', $precision = 0);
-            $table->date('implementation_date');
+            $table->time('implementation_hours', $precision = 0)->nullable(false);
+            $table->date('implementation_date')->nullable(false);
 
-            $table->foreignId("seminar_id");
-
+            $table->foreignId("seminar_id")->nullable(false);
+            $table->foreignId("coordinator_id")->nullable(false);
+    
             
             $table->softDeletes();
             $table->timestamps();

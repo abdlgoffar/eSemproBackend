@@ -45,7 +45,7 @@ class Invitation extends Model
 
 
     //many to many 
-    public function examiner(): BelongsToMany
+    public function examiners(): BelongsToMany
     {
         return $this->belongsToMany(Examiner::class, "examiners_invitations");
     }
@@ -56,9 +56,10 @@ class Invitation extends Model
         return $this->belongsTo(Seminar::class, "seminar_id", "id");
     }
 
-    //many to many 
-    public function room(): BelongsToMany
+    public function coordinator(): BelongsTo
     {
-        return $this->belongsToMany(Room::class, "invitations_rooms");
+        return $this->belongsTo(Coordinator::class);
     }
+
+
 }

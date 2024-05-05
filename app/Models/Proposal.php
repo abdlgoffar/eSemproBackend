@@ -32,7 +32,7 @@ class Proposal extends Model
     }
 
       
-    //a proposal just can have one fild pdf
+    //a proposal just can have one file pdf
     public function proposalPdf(): HasOne
     {
         return $this->hasOne(ProposalPdf::class, "proposal_id", "id");
@@ -48,5 +48,7 @@ class Proposal extends Model
      {
          return $this->belongsTo(Seminar::class, "seminar_id", "id");
      }
+
+     
 
 }

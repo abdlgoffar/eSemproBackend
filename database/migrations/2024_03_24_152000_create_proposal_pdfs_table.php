@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('proposal_pdfs', function (Blueprint $table) {
             $table->id();
             $table->string("name", 600)->nullable();
+            $table->string("original_name", 600)->nullable();
             $table->string("path", 600)->nullable();
       
             $table->foreignId("proposal_id");

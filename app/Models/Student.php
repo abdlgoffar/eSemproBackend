@@ -50,9 +50,21 @@ class Student extends Model
     }
 
     //many to many 
-    public function supervisor(): BelongsToMany
+    public function supervisors(): BelongsToMany
     {
         return $this->belongsToMany(Supervisor::class, "students_supervisors")->withTimestamps();
+    }
+
+    //many to many 
+    public function examiners(): BelongsToMany
+    {
+        return $this->belongsToMany(Examiner::class, "students_examiners")->withTimestamps();
+    }
+
+
+    //one student can have one seminar room
+    public function seminarRoom(): BelongsTo {
+        return $this->belongsTo(SeminarRoom::class, "seminar_room_id", "id");
     }
 
 }
